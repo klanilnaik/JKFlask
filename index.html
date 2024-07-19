@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Library</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, textarea {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .book, .review {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Book Library</h1>
+        <form id="book-form">
+            <h2>Add a new book</h2>
+            <input type="text" id="title" placeholder="Title" required>
+            <input type="text" id="author" placeholder="Author" required>
+            <textarea id="content" placeholder="Content" required></textarea>
+            <button type="submit">Add Book</button>
+        </form>
+
+        <div id="books">
+            <h2>Books</h2>
+            <div id="book-list"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookForm = document.getElementById('book-form');
+            const bookList = document.getElementById('book-list');
+
+            
+            async function fetchBooks() {
+                const response = await fetch('/books');
+                const books = await response.json();
+                bookList.innerHTML = '';
+                books.forEach(book => {
+                    const bookDiv = document.createElement('div');
+                    bookDiv.classList.add('book');
+                    bookDiv.innerHTML = `
+                        <h3>${book.title}</h3>
+                        <p>Author: ${book.author}</p>
+                        <p>${book.content}</p>
+                        <button onclick="fetchReviews(${book.id})">View Reviews</button>
+                        <div id="reviews-${book.id}"></div>
+                        <form onsubmit="addReview(event, ${book.id})">
+                            <textarea placeholder="Write a review" required></textarea>
+                            <input type="number" placeholder="Rating" step="0.1" max="5" min="0" required>
+                            <button type="submit">Add Review</button>
+                        </form>
+                    `;
+                    bookList.appendChild(bookDiv);
+                });
+            }
+
+            
+            bookForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const title = document.getElementById('title').value;
+                const author = document.getElementById('author').value;
+                const content = document.getElementById('content').value;
+                const response = await fetch('/books', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title, author, content })
+                });
+                if (response.ok) {
+                    fetchBooks();
+                    bookForm.reset();
+                }
+            });
+
+            
+            async function fetchReviews(bookId) {
+                const response = await fetch(`/books/${bookId}/reviews`);
+                const reviews = await response.json();
+                const reviewDiv = document.getElementById(`reviews-${bookId}`);
+                reviewDiv.innerHTML = '';
+                reviews.forEach(review => {
+                    const reviewElement = document.createElement('div');
+                    reviewElement.classList.add('review');
+                    reviewElement.innerHTML = `
+                        <p>Rating: ${review.rating}</p>
+                        <p>${review.comment}</p>
+                    `;
+                    reviewDiv.appendChild(reviewElement);
+                });
+            }
+
+            
+            async function addReview(event, bookId) {
+                event.preventDefault();
+                const form = event.target;
+                const comment = form.querySelector('textarea').value;
+                const rating = form.querySelector('input').value;
+                const response = await fetch(`/books/${bookId}/reviews`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ comment, rating })
+                });
+                if (response.ok) {
+                    fetchReviews(bookId);
+                    form.reset();
+                }
+            }
+
+            
+            fetchBooks();
+        });
+    </script>
+</body>
+</html>

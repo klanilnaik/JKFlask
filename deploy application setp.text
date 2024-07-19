@@ -1,0 +1,89 @@
+Step 1: Set Up AWS Environment
+        Create an AWS Account: Sign up for an AWS account if you don't already have one.
+        Set Up IAM Roles: Create appropriate IAM roles with permissions for EC2, Lambda, ECS, RDS, and S3.
+
+
+Step 2: Choose the Deployment Service
+    EC2: For full control over the environment.
+    Lambda: For serverless and event-driven applications.
+    ECS: For containerized applications.   
+
+Step 3: Set Up the Database on AWS RDS
+    Launch an RDS Instance:
+    Go to the RDS service in the AWS Management Console.
+    Choose the database engine (e.g., MySQL, PostgreSQL).
+    Configure instance details, including instance size, storage, and security group.
+    Set up the database credentials. 
+
+Step 4: Store Model Files on AWS S3
+    Create an S3 Bucket:
+    Go to the S3 service in the AWS Management Console.
+    Create a new bucket and configure the settings.
+    Upload Model Files: Upload any necessary model files to this bucket.
+
+Using EC2
+    Launch an EC2 Instance:
+    Go to the EC2 service and launch an instance.
+    Choose the instance type and configure instance details.
+    Set up security groups and key pairs.
+    Deploy the Application: SSH into the instance and deploy your application (e.g., using a Docker container or directly running the application).
+
+Using Lambda
+    Create a Lambda Function:
+    Go to the Lambda service in the AWS Management Console.
+    Create a new function and configure the runtime environment.
+    Upload your application code (e.g., as a ZIP file or using an S3 bucket).
+
+Using ECS
+    Create an ECS Cluster:
+    Go to the ECS service in the AWS Management Console.
+    Create a new ECS cluster.
+    Create a Task Definition:
+    Define your container(s) and specify resource requirements.
+    Run the Task in the Cluster: Deploy the task to your ECS cluster.
+
+Step 6: Set Up CI/CD Pipeline
+Use AWS CodePipeline:
+Go to the CodePipeline service in the AWS Management Console.
+Create a new pipeline and configure the source (e.g., GitHub repository).
+Add Build Stage:
+Use AWS CodeBuild to build your application.
+Add Deploy Stage:
+For EC2: Use CodeDeploy to deploy to EC2 instances.
+For Lambda: Use the Lambda deployment action.
+For ECS: Use ECS deployment action.
+Example CI/CD Pipeline Configuration
+Source Stage
+Connect to your Git repository (e.g., GitHub).
+Build Stage
+Use AWS CodeBuild to build the application:
+
+
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+  pre_build:
+    commands:
+      - echo Installing dependencies...
+      - npm install
+  build:
+    commands:
+      - echo Build started on `date`
+      - npm run build
+  post_build:
+    commands:
+      - echo Build completed on `date`
+
+artifacts:
+  files:
+    - '**/*'
+Deploy Stage
+EC2: Use AWS CodeDeploy to deploy to EC2 instances.
+Lambda: Use AWS Lambda deployment.
+ECS: Use ECS deployment.
+Step 7: Testing and Monitoring
+Test the Deployment: Ensure that the application is running correctly.
+Set Up Monitoring: Use AWS CloudWatch for logging and monitoring application performance.
